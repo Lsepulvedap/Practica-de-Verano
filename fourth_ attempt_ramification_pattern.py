@@ -35,13 +35,13 @@ G= nx.Graph()
 G.add_node(0, pos= (0,0))
 #%% 
 #----------------------------FUNCIONES A USAR-----------------------------------------------
-def direction(x,y): 
+def direction(): 
     
     '''retorna la dirección en que se va a mover una particula''' 
     #Esto hay que mejorarlo para que la particula no vuelva por donde vino. Para esto hay que 
     #hacer que se revisen los vecinos mas cercanos. Cuando encuentra posiciones desocupadas
     #elige una (o dos, dependiendo si se ramifica o se mueve) al azar. 
-    pos= np.array([[x+1, y+]])
+ 
     
     
     return choice([(1,0), (-1,0), (0,1), (0,-1)] ) 
