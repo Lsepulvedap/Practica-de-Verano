@@ -18,134 +18,131 @@ t= 0 #tiempo inicial
 h= 1 #paso de tiempo
 s= 0.9
 
-G= nx.Graph()
 
 #-----------------------------ARREGLOS PARA GUARDAR DATOS---------------------------------------------
 
+# edges=np.empty([0, 2])
+
 T = np.array([[0,0]]) #define las posiciones ocupadas por cada particula
 
-#pos= np.array([0, 0])
-ind_part_activas= np.array([0,0]) #define el indice de la posicion de las particulas activas en T
+pos= np.array([0, 0]) # posicion de las particulas que se van añadiendo 
+
+ind_part_activas= np.array([0]) #define el indice de la posicion de las particulas activas en T
 N= 0
-
-
+G= nx.Graph()
+#%% 
 #----------------------------FUNCIONES A USAR-----------------------------------------------
 def direction( ): 
-    #retorna la dirección en que se va a mover una particula
+    
+    '''retorna la dirección en que se va a mover una particula''' 
     #esto hay que mejorarlo para que la particula no vuelva por donde vino
     
     return choice([(1,0), (-1,0), (0,1), (0,-1)] ) 
+#end_directionbt
+
 #%%
 def isintrace(pos, trace):
+    
+    ''' Chequea si el elemento pos, correspondiente al par ordenado que denota la posicion de una particula
+    nueva se ecuentra ya en la traza. '''
+    
     for i in trace:
         if np.array_equal(pos, i):
             return True
     return False
+
 #%% 
-def edge_list( G, nodes_pos, source, target):
+def edge_list( G, edges, T, source, target):
     
-    #esta funcion toma el grafo G, las posiciones de los nodos  y la direccion
-    #en la que se genera la arista 'edge' ; desde source hasta target. 
+    ''' Esta funcion toma el grafo G, las posiciones de los nodos (que corresponde simplemente a la traza)
+    y la direccion  en la que se genera la arista 'edge' ; desde source hasta target. 
     
-    #recordar que np.append junta un array con un valor en un eje especificado.Por
-    #lo tanto, se le debe entregar las coordenadas en arreglos, como Trace. 
+    Recordar que np.append junta un array con un valor en un eje especificado.Por
+    lo tanto, se le debe entregar las coordenadas en arreglos, como Trace.
+    Edges tiene que ser un arreglo al que le vamos anexando conexiones e indica las conexiones que se hacen 
+    de acuerdo a los indices de traza.  
     
-    edges= np.append(source, target, axis=0)
+    Source y target son indices de los nodos en Traza'''
     
-    #nodes_pose debe ser un arrgelo unidimensional, que me diga el indice
-    #o numero del nodo. En el caso en que un nodo se divida, los resultantes
-    #deberían tener el mismo número, o seguiremos teniendo el problema. Quizá
-    #una forma de arreglarlo sería conectar entre los nodos que tengan distancia
-    #exactamente igual a 1
+    nodes_pos= T[source] #?? <==> T[source, :] entregará un par ordenado con las coordenadas de source
+    #así, iremos desde source hasta target
     
-    G.add_node(target, pos= (nodes_pos[0], nodes_pos[1]))
+    edges= np.append(edges, [source, target] , axis=0)
     
-    #Target tiene coordenadas x=nodes_pos[0], y=  nodes_pos[1] 
-    #esto no tiene mucho sentido
+    G.add_node(target, pos= (nodes_pos[0], nodes_pos[1])) #añade un nodo con coordenadas x, y de source
+    
     return G, edges 
 # end edge_list
 #%% 
 
-def action(G, edges, pos, Trace, ind_tmp, N):
+def action(G, edges, nodes_pos, pos, Trace, ind_tmp, N):
+    
+    ''' Toma un grafo G y un arreglo edges que indica las conexiones que se van dando entre los nodos 
+    indexados. Pos corresponde a la nueva posicion de la particula que decide moverse, por lo que corresponde
+    a un par odenado (x,y), y Trace el arreglo de todas las posiciones que se han ocupado.
+    
+    Por ultimo, ind_tmp y N son los indices de las particulas temporalmente activas y el numero de particulas, 
+    respectivamente. ''' 
+    
     pos += direction()
     if isintrace(pos, Trace):
-        
-        #    if any( Trace[:] == pos)  :  arroja un error, porque, si bien le estoy preguntando
-        #a python si es que alguna fila de la traza es igual a la posicion, este compara 
-        #todo el arreglo con pos, no parece comparar fila con fila. Para arreglarlo debería pregun-
-        #tarle ...? tiene que revisar fila por fila, esto es, tiene que revisar TODO el arreglo
-        #asi que debería ser any(blabla).all(?) y ahi no se que va xd
         pass 
-    #estamos revisando una posible direccion ! 
-    
-        
+   
     else : 
-        #N+= 1
-        #ind_tmp.append(N) #aqui agregamos el indice de la particula activa nueva 
-          #y agregamos a la traza la posicion ocupada
-        ind_tmp.append(pos)
+
+        ind_tmp.append(N) #anexamos el indice activo a la enésima partícula 
+        
         Trace= np.concatenate((Trace, [pos]), axis=0)
         N += 1
-        G, edges= edge_list(G, pos, T[i-1], T[i])
-        #aqui actualizamos la traza dentro el if. No deberíamos actualizarla fuera tambien? 
         
-    #ind_part_activas= ind_tmp
-    #print(ind_part_activas)
+
+            
+    G, edges= edge_list(G, edges, T, nodes_pos, N ) #source es un indice de la traza, y target tambien
     
-    return G, Trace, N, edges#ind_part_activas, N
+  
+            
+         
+    return G, Trace, N, edges #ind_part_activas 
+
+#end_action
         
  #%%        
   
 #--------------------------------- MAIN CODE---------------------------------------------------------
-
-#este loop se debe ejectutar mientras el contador sea menor al maximo, Y  mientras
-#tengamos particulas activas. Si no hay nada activo, nada se propaga y dejamos el 
-#codigo corriendo inutilmente 
-pos= (0,0)
-edges=np.zeros([len(pos), 2])
-
 while t < tmax  and len(ind_part_activas) >0  :
-        
+    
+    
     t += h # tiempo= tiempo+ h
     ind_tmp = [] #guarda una posicion temporal que debe ser verificada en la traza
-    
-    for i in ind_part_activas: 
-        r= np.random.uniform(0,1) #retorna numeros uniformemente distribuidos entre cero y uno 
-        #pos = np.array(T[i])  #Asigna la posicion a una fila de la traza. Esto es un arreglo de python
-        # plt.scatter(T[:,0], T[:,1])
-        # plt.savefig('paso' + str(i)+ '.png', format= 'png')
-        # plt.clf() 
-         
-        if r< s: #si el número aleatorio escogido es menor que esa cantidad, hay ramificación
-        #notese que al haber ramificacion, podemos agregar o quitar una particula, dependiendo de si
-        #las posiciones han sido ocupadas. 
+    edges= [] 
+    for i in np.random.permutation(ind_part_activas) : 
         
-            # T, ind_part_activas, N = action(pos, T, ind_tmp, N)
-            # T, ind_part_activas, N = action(pos, T, ind_tmp, N )
-            G, T, N, edges = action(G, edges, i, T, ind_tmp, N)
-            G, T, N, edges = action(G, edges, i, T, ind_tmp, N )
+         
+        r= np.random.uniform(0,1) 
+        
+        nodes_pos= T[i]
+
+        if r< s:
+        
+            G, T, N, edges = action(G, edges, nodes_pos, pos, T, ind_tmp, N)
+            G, T, N, edges = action(G, edges, nodes_pos, pos, T, ind_tmp, N)
             
-        else: #si el número es mayor o igual, saltamos 
-            #T, ind_part_activas, N = action(pos, T, ind_tmp, N)
-            G, T, N, edges = action(G, edges, i, T, ind_tmp, N)
+        else:
+        
+            G, T, N, edges =  action(G, edges, nodes_pos, pos, T, ind_tmp, N)
+            
     ind_part_activas = ind_tmp
+   
+    
+    # G.add_edges_from(edges)
+    
+    # pos_dictionary = nx.get_node_attributes(G, 'pos')
+    
     print(ind_tmp)
-    #ind_part_activas = ind_tmp
-    #aqui le estaba dando el valor de una lista vacía a ind_part_activas. Además, esto ya lo
-    # hace la funcion de accion    
+#%%
+ 
+G.add_edges_from(edges)
+#pos= nx.get_node_attributes(G, 'pos')
 
+#nx.draw_networkx(G, pos, with_labels=True, arrows=True )
 
-#para generar el grafo 
-
-
-
-    
-#ramificamos? si
-#movemos tambien
-# nos devolvemos 
-# se desactiva todo de forma rara 
-
-#la condicion para que una particula estpe activa es que (sin devolvernos) al menos
-#una de las tres posiciones que tiene a su alrededor esté disponible 
-#*revisar vecinos 
-    
