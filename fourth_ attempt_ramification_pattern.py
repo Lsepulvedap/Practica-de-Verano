@@ -13,10 +13,10 @@ import networkx as nx
 
 #---------------------------------DATOS DEL PROBLEMA--------------------------------------------------
 
-tmax= 10 #tiempo maximo de simulacion
+tmax= 9 #tiempo maximo de simulacion
 t= 0 #tiempo inicial 
 h= 1 #paso de tiempo
-s= 1
+s= .3
 
 
 #-----------------------------ARREGLOS PARA GUARDAR DATOS---------------------------------------------
@@ -35,20 +35,7 @@ G= nx.Graph()
 G.add_node(0, pos= (0,0))
 #%% 
 #----------------------------FUNCIONES A USAR-----------------------------------------------
-def direction(): 
-    
-    '''retorna la dirección en que se va a mover una particula''' 
-    #Esto hay que mejorarlo para que la particula no vuelva por donde vino. Para esto hay que 
-    #hacer que se revisen los vecinos mas cercanos. Cuando encuentra posiciones desocupadas
-    #elige una (o dos, dependiendo si se ramifica o se mueve) al azar. 
- 
-    
-    
-    return choice([(1,0), (-1,0), (0,1), (0,-1)] ) 
-#end_directionbt.........................................................................................................................
 
-
-#%%
 def isintrace(pos, trace):
     
     ''' Chequea si el elemento pos, correspondiente al par ordenado que denota la posicion de una particula
@@ -58,11 +45,39 @@ def isintrace(pos, trace):
         if np.array_equal(pos, i):
             return True
     return False
-
 #%% 
-def edge_list( G, edges, T, source, target):
+def direction(pos, Trace): 
     
-    ''' Esta funcion toma el grafo G, las posiciones de los nodos (que corresponde simplemente 
+    ''' Le da una dirección de movimiento a las partículas a partir de la posicion de la particula
+    que va a moverse pos, revisando los vecinos mas cercanos de la partícula en ese momento, cuyas posiciones
+    son dadas por pos_tmp. Luego, anexa en una matriz las posiciones que no están ocupadas revisando la
+    traza Trace. Finalmente elige al azar una posicion de la matriz.'''
+    
+    opciones = np.array([[1,0] , [-1,0], [0,1], [0,-1] ] )
+    pos_tmp = pos + opciones 
+    posibles = []
+    
+  
+    for neighbor in pos_tmp:
+        
+        if isintrace(neighbor, Trace):
+            pass
+
+        else: 
+            posibles.append(neighbor)
+            #print('y las que podriamos ocupar son' ,posibles)
+    if np.any(posibles):
+        
+        posicion = choice(posibles)
+        #print('elegimos', posicion)
+        return posicion
+    else:
+        return []
+#end_direction
+#%% 
+def edge_list(edges, T, source, target):
+    
+    ''' Esta funcion toma las posiciones de los nodos (que corresponde simplemente 
     a la traza) y la direccion  en la que se genera la arista 'edge' ; desde source hasta target. 
     
     Recordar que np.append junta un array con un valor en un eje especificado.Por
@@ -77,32 +92,37 @@ def edge_list( G, edges, T, source, target):
     print(target)
     #el arreglo (source, target) debe ser (indice en traza(source), N)
 
-    return G, edges 
+    return  edges 
 # end edge_list
 #%% 
 
 def action(G, edges, pos, Trace, ind_tmp, i, N):
     
     ''' Toma un grafo G y un arreglo edges que indica las conexiones que se van dando entre los nodos 
-    indexados. Pos corresponde a la nueva posicion de la particula que decide moverse, por lo que corresponde
+    indexados. Pos corresponde a la posicion de la particula que decide moverse(que debe entregar direction)
+    por lo que corresponde
     a un par odenado (x,y), y Trace el arreglo de todas las posiciones que se han ocupado. 
     Además,  ind_tmp son los indices de las particulas temporalmente activas. 
     
     Por ultimo i, N son los índices de las partículas fuente y objetivo en las que se generan
     las conexiones, respectivamente. ''' 
-    pos_tmp = np.copy(pos)
-    pos_tmp += direction()
     
-    if isintrace(pos_tmp, Trace):
-        pass 
-    else : 
-        
-        Trace= np.concatenate((Trace, [pos_tmp]), axis=0)
+    pos_tmp = np.copy(pos)
+    #print(pos_tmp.dtype) #es una fila de matriz. Está bien
+    
+    #pos_tmp += direction(pos, Trace)
+    pos_tmp= direction(pos, Trace)# direction revisa las posiciones posibles y elige una que no está en la traza
+    
+    #print('la posicion nueva es', pos_tmp)
+    if np.any(pos_tmp):
+        Trace= np.concatenate( (Trace, [pos_tmp]) , axis=0)
         N += 1
-        print(N)
+        #print(N)
         ind_tmp.append(N) #anexamos el indice activo a la enésima partícula
-        G, edges= edge_list(G, edges, T, i, N ) #source es un indice de la traza, y target tambien
+        
+        edges= edge_list(edges, T, i, N ) #source es un indice de la traza, y target tambien
         G.add_node(N, pos= (pos_tmp[0], pos_tmp[1]))
+        
   #nodes_pos es un indice 
             
          
@@ -126,7 +146,8 @@ while t < tmax  and len(ind_part_activas) >0  :
         
        # nodes_pos= T[i][0] #aqui esto no es un indice , y debería serlo
        
-        pos= np.array(T[i])
+        #pos= np.array(T[i])
+        pos= T[i]
         
         #voy a cambiar nodes_position por i
         if r < s:
