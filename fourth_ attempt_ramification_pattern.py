@@ -16,7 +16,7 @@ import networkx as nx
 tmax= 10 #tiempo maximo de simulacion
 t= 0 #tiempo inicial 
 h= 1 #paso de tiempo
-s= .8
+s= 1.0
 
 
 #-----------------------------ARREGLOS PARA GUARDAR DATOS---------------------------------------------
@@ -74,6 +74,18 @@ def direction(pos, Trace):
     else:
         return []
 #end_direction
+
+#%%
+def revivir(Trace,ind_part_activas,ind_tmp): 
+    
+    for i in ind_part_activas: 
+        revisar= Trace[i]
+        r= direction(revisar, Trace)
+        if len(r) > 0: 
+            ind_tmp.append(i)
+    return ind_tmp
+        
+ 
 #%% 
 def edge_list(edges, T, source, target):
     
@@ -108,9 +120,6 @@ def action(G, edges, pos, Trace, ind_tmp, i, N):
     las conexiones, respectivamente. ''' 
     
     pos_tmp = np.copy(pos)
-    #print(pos_tmp.dtype) #es una fila de matriz. Está bien
-    
-    #pos_tmp += direction(pos, Trace)
     pos_tmp= direction(pos, Trace)# direction revisa las posiciones posibles y elige una que no está en la traza
     
     #print('la posicion nueva es', pos_tmp)
@@ -140,7 +149,9 @@ while t < tmax  and len(ind_part_activas) >0  :
     ind_tmp = [] #guarda una posicion temporal que debe ser verificada en la traza
     
     randperms = np.random.permutation(ind_part_activas)
+    
     for i in randperms:
+        
          
         r= np.random.uniform(0,1) 
         
@@ -156,20 +167,25 @@ while t < tmax  and len(ind_part_activas) >0  :
         
             G, T, N, edges, ind_tmp = action(G, edges, pos, T, ind_tmp,i, N)
             G, T, N, edges, ind_tmp = action(G, edges, pos, T, ind_tmp,i, N)
-            
         else:
         
             G, T, N, edges, ind_tmp =  action(G, edges, pos, T, ind_tmp,i, N)
             
+    ind_tmp= revivir(T ,ind_part_activas,ind_tmp)
+       
     ind_part_activas = ind_tmp
-
-#%%
-plt.figure(figsize= (9,9))
-
+    
+plt.figure(figsize= (8,8)) 
+plt.axis('equal')
+       
+plt.scatter(T[:,0], T[:,1], c= 'grey', alpha= 0.0)
+plt.scatter(T[ind_part_activas][:,0], T[ind_part_activas][:,1], c= 'red', alpha= 0.8)
+     
 x= nx.get_node_attributes(G, 'pos')
 G.add_edges_from(edges)
-#nx.draw_nodes(G,x) 
 
-nx.draw(G, x, node_shape='.', node_size=0.0 )
-plt.axis('equal')
-#ya que la i-esima particula es la que salta, le puedo entregar como source a i. Luego, target es N
+nx.draw_networkx_nodes(G,x, node_shape='.', node_size=0.0, alpha= 0 )
+nx.draw_networkx_edges(G,x)
+#nx.draw(G, x, node_shape='.', node_size=0.0 )
+
+
