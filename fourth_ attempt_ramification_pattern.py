@@ -13,10 +13,10 @@ import networkx as nx
 
 #---------------------------------DATOS DEL PROBLEMA--------------------------------------------------
 
-tmax= 9 #tiempo maximo de simulacion
+tmax= 10 #tiempo maximo de simulacion
 t= 0 #tiempo inicial 
 h= 1 #paso de tiempo
-s= .3
+s= .8
 
 
 #-----------------------------ARREGLOS PARA GUARDAR DATOS---------------------------------------------
@@ -89,7 +89,7 @@ def edge_list(edges, T, source, target):
      y N, respectivamente.'''
     
     edges= np.append (edges, np.array([ [source, target] ]) , axis=0)
-    print(target)
+    #print(target)
     #el arreglo (source, target) debe ser (indice en traza(source), N)
 
     return  edges 
@@ -162,16 +162,14 @@ while t < tmax  and len(ind_part_activas) >0  :
             G, T, N, edges, ind_tmp =  action(G, edges, pos, T, ind_tmp,i, N)
             
     ind_part_activas = ind_tmp
-    #%% 
-for i in range(len(T[:,0])): 
-    plt.scatter(T[:,0], T[:,1], label= i)
-# #%%
-# for i in range(len( T[:,0] ) ) : 
-#     G.add_node(i, pos= (T[i,0], T[i,1]))
 
 #%%
+plt.figure(figsize= (9,9))
+
 x= nx.get_node_attributes(G, 'pos')
 G.add_edges_from(edges)
-nx.draw(G, x, with_labels= True)
+#nx.draw_nodes(G,x) 
+
+nx.draw(G, x, node_shape='.', node_size=0.0 )
 plt.axis('equal')
 #ya que la i-esima particula es la que salta, le puedo entregar como source a i. Luego, target es N
