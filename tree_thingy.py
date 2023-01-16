@@ -75,7 +75,7 @@ def hierarchy_pos(G, root=None, width=1., vert_gap = 0.2, vert_loc = 0, xcenter 
             
     return _hierarchy_pos(G, root, width, vert_gap, vert_loc, xcenter)
 
-G= nx.read_gpickle('myGraph.gpickle')
+#G= nx.read_gpickle('myGraph.gpickle')
 
 #nx.draw(G, tree, node_color= 'red', node_size= 10)
 
@@ -90,8 +90,16 @@ def clean(G):
     
     for i in range(len(copia.nodes)): 
         if copia.degree(i)== 2: 
+            neighbours = [n for n in copia[i]]
+            copia.add_edge(neighbours[0], neighbours[1])
             copia.remove_node(i)
+
         else: 
             pass 
             
-    return  nodos  
+    return  nodos , copia  
+
+
+
+
+
