@@ -12,12 +12,12 @@ from random import choice
 import networkx as nx
 from math import dist
 
-from tree_thingy  import * 
+import tree_thingy as tt
 
 #%%
 #---------------------------------DATOS DEL PROBLEMA--------------------------------------------------
 
-tmax= 10#tiempo maximo de simulacion
+tmax= 3#tiempo maximo de simulacion
 t= 0 #tiempo inicial 
 h= 1 #paso de tiempo
 s= 1.0
@@ -203,7 +203,7 @@ while t < tmax  and len(ind_part_activas) >0  :
        
     ind_part_activas = ind_tmp
          
-plt.figure(figsize=(9,9))
+plt.figure(figsize=(5,5))
 plt.axis('equal')   
    
 plt.scatter(T[:,0], T[:,1], c= 'grey', alpha= 0.0)
@@ -223,9 +223,13 @@ plt.show()
 nx.write_gpickle(G,'myGraph.gpickle')
 
 
-nodos, copia = clean(G)
+nodos, copia = tt.clean(G)
 
-
-tree= hierarchy_pos(G, 0)
+plt.figure(figsize=(5,5))
+plt.axis('equal')  
+tree= tt.hierarchy_pos(G, 0)
 nx.draw(G, tree, node_color= 'red', node_size= 10)
-
+plt.show()
+#%%
+P_k= tt.histogram(G)
+plt.show()

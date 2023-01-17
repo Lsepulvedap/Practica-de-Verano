@@ -102,5 +102,18 @@ def clean(G):
 
 
 
+def histogram(G): 
+    
+   degree_sequence= sorted([d for n,d in G.degree()], reverse=True)
+   from collections import Counter
+   import matplotlib.pyplot as plt
 
+   ndegree= Counter(degree_sequence)
+   deg, cnt = zip(*ndegree.items())
+   plt.title('Node degree distribution')
+   plt.xlabel(r'Node degree $k$ ')
+   plt.ylabel(r'Distribution $\mathcal{P(k)}$')
+   plot= plt.bar(deg, cnt, width=0.80, color='b')
+   
+   return plot 
 
