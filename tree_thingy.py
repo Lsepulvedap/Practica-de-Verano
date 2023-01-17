@@ -89,6 +89,7 @@ def clean(G):
    
     
     for i in range(len(copia.nodes)): 
+        
         if copia.degree(i)== 2: 
             neighbours = [n for n in copia[i]]
             copia.add_edge(neighbours[0], neighbours[1])
