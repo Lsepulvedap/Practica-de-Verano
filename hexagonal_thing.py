@@ -10,14 +10,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from random import choice
 import networkx as nx
-from math import dist
 
 import tree_thingy as tt
 
 #%%
 #---------------------------------DATOS DEL PROBLEMA--------------------------------------------------
 
-tmax= 3#tiempo maximo de simulacion
+tmax= 10#tiempo maximo de simulacion
 t= 0 #tiempo inicial 
 h= 1 #paso de tiempo
 s= 1.0
@@ -27,8 +26,9 @@ s= 1.0
 
 edges =np.empty([0, 2])
 
-T = np.array([[0,0]]) 
+origen= np.array( [0,0])
 
+T = np.array([[0,0]]) 
 pos= np.array([ 0, 0]) # posicion de las particulas que se van añadiendo/ [Indice, (par ordenado)] 
 
 ind_part_activas= np.array([0]) #define el indice de la posicion de las particulas activas en T
@@ -49,6 +49,8 @@ def isintrace(pos, trace):
         if np.allclose(pos, i, rtol= 1e-3):
             return True
     return False
+
+
 #%% 
 def direction(pos, Trace): 
     
@@ -68,7 +70,7 @@ def direction(pos, Trace):
   
     for neighbor in pos_tmp:
         
-        if isintrace(neighbor, Trace):
+        if isintrace(neighbor, Trace): #or boundary(origen, pos_tmp, tmax, h):
             pass
 
         else: 
@@ -78,24 +80,39 @@ def direction(pos, Trace):
         
         posicion = choice(posibles)
         #print('elegimos', posicion)
-        return posicion
-    else:
-        return []
+        
+        if boundary(origen,posicion , 10):
+            return posicion
+    
+    return []
 #end_direction
 
-#%% 
-def boundary(origen, position, max_time, h): 
-    ''' Calcula el radio máximo del movimiento como la máxima distancia que puede
-    moverse la partícula en línea recta durante el tiempo de la simulación. Luego,
-   calcula la distancia desde el origen a la posicion de la partícula que
-    se va a mover. Si dicha distancia es mayor o igual al radio maxímo, se elimina
-    la posicion nueva a la que se iba a mover. '''
-    r_max= max_time/h 
-    if dist(origen, position) >= r_max :
-        np.delete(position)
-        
-        
 
+#%% 
+def boundary(origen, position, r_max): 
+    
+    ''' Calcula el radio máximo del movimiento como la máxima distancia que puede
+    moverse la partícula en línea recta durante el tiempo de la simulación . Luego,
+    calcula la distancia desde el origen a la posicion de la partícula que
+    se movió (la entregada por direction). Si dicha distancia es menor al radio máximo, retorna True. '''
+    
+    #print('la posicion elegida por direction es', position)
+    
+    distancia= np.hypot( position[0]- origen[0], position[1]- origen[1])
+    
+    #np.hypot caclula la hipotenusa entre dos puntos; en el espacio euclideo es igual a la norma uwu
+    #print('y la distancia del origen a la posicion es', distancia)
+    
+    #distancia= dist(origen, position)
+    # if bc==0: 
+    #     bc_flag= 0
+    # elif bc== 1: 
+    #     bc_flag= 
+    if distancia <= r_max :
+        return True 
+    
+    return False
+        
 #%%
 def revivir(Trace,ind_part_activas,ind_tmp): 
     ''' Revisa la posición de la partícula que quedó activa y ve si tiene espacio dis-
@@ -146,9 +163,13 @@ def action(G, edges, pos, Trace, ind_tmp, i, N):
     
     pos_tmp = np.copy(pos)
     pos_tmp= direction(pos, Trace)# direction revisa las posiciones posibles y elige una que no está en la traza
+    #print('la posicion arrojada es',pos_tmp)
     
     #print('la posicion nueva es', pos_tmp)
+    
     if np.any(pos_tmp):
+        #si es que hay algun elemento elegido, lo agregamos a traza. Después hay que ver si ese punto
+        #cunple con la condicion de borde 
         Trace= np.concatenate( (Trace, [pos_tmp]) , axis=0)
         N += 1
         #print(N)
@@ -202,12 +223,20 @@ while t < tmax  and len(ind_part_activas) >0  :
     ind_tmp= revivir(T ,ind_part_activas,ind_tmp)
        
     ind_part_activas = ind_tmp
-         
-plt.figure(figsize=(5,5))
+
+#%%        
+plt.figure(figsize=(9,9))
 plt.axis('equal')   
    
 plt.scatter(T[:,0], T[:,1], c= 'grey', alpha= 0.0)
 plt.scatter(T[ind_part_activas][:,0], T[ind_part_activas][:,1], c= 'red', alpha= 0.8)
+angle = np.linspace( 0 , 2 * np.pi , 150 ) 
+ 
+radius = 10
+x = radius * np.cos( angle ) 
+y = radius * np.sin( angle ) 
+
+plt.plot( x, y ) 
 
 x= nx.get_node_attributes(G, 'pos')
 
@@ -225,11 +254,12 @@ nx.write_gpickle(G,'myGraph.gpickle')
 
 nodos, copia = tt.clean(G)
 
-plt.figure(figsize=(5,5))
+plt.figure(figsize=(9,9))
 plt.axis('equal')  
 tree= tt.hierarchy_pos(G, 0)
 nx.draw(G, tree, node_color= 'red', node_size= 10)
 plt.show()
 #%%
+plt.figure(figsize= (9,9))
 P_k= tt.histogram(G)
 plt.show()
