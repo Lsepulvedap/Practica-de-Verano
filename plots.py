@@ -10,7 +10,7 @@ import tree_thingy as tt
 import numpy as np
 
 
-G = nx.read_gpickle('Graph1.gpickle')
+G = nx.read_gpickle('Graph_prueba1.gpickle')
 
 plt.figure(figsize=(9,9))
 plt.axis('equal')   
@@ -20,11 +20,12 @@ plt.axis('equal')
 
 angle = np.linspace( 0 , 2 *np.pi) 
  
-radius = 10
+radius = 25
 x = radius * np.cos( angle ) 
 y = radius * np.sin( angle ) 
 
 plt.plot( x, y ) 
+
 
 x= nx.get_node_attributes(G, 'pos')
 
@@ -38,15 +39,15 @@ plt.show()
 
 #%% 
 
-nodos, copia = tt.clean(G)
+# nodos, copia = tt.clean(G)
 
-# plt.figure(figsize=(9,5))
-plt.axis('equal')  
-tree= tt.hierarchy_pos(G, 0)
+# # plt.figure(figsize=(9,5))
+# plt.axis('equal')  
+# tree= tt.hierarchy_pos(G, 0)
 
-nx.draw(G, tree, node_color= 'red', node_size= 10)
-plt.show()
-#%%
-plt.figure(figsize= (9,9))
-P_k= tt.histogram(G)
-plt.show()
+# nx.draw(G, tree, node_color= 'red', node_size= 10)
+# plt.show()
+# #%%
+# plt.figure(figsize= (9,9))
+# P_k= tt.histogram(G)
+# plt.show()

@@ -81,7 +81,7 @@ def direction(pos, Trace):
         posicion = choice(posibles)
         #print('elegimos', posicion)
         
-        if boundary(origen , posicion , 10):
+        if boundary(origen , posicion , 25):
             return posicion
     
     return []
@@ -253,19 +253,30 @@ def clean(G):
     return  nodos , copia  
 
 #%%
+#necesitamos hacer una funcion que junte todos los diccionarios con nodos, y despues haga el histograma
+#con eso 
 
-def histogram(G): 
+
+
+# def analisis(G):
+#     from collections import Counter 
+#     for g in range(1000): 
+#         degrees= dict(Counter(Gi.degrees)+ Counter(degrees_2))
+
+# def histogram(G): 
     
-   degree_sequence= sorted([d for n,d in G.degree()], reverse=True)
-   from collections import Counter
-   import matplotlib.pyplot as plt
-
-   ndegree= Counter(degree_sequence)
-   deg, cnt = zip(*ndegree.items())
-   plt.title('Node degree distribution')
-   plt.xlabel(r'Node degree $k$ ')
-   plt.ylabel(r'Distribution $\mathcal{P(k)}$')
-   plot= plt.bar(deg, cnt, width=0.80, color='b')
+    
+#    degree_sequence= sorted([d for n,d in G.degree()], reverse=True)
    
-   return plot 
+#    from collections import Counter
+#    import matplotlib.pyplot as plt
+
+#    ndegree= Counter(degree_sequence)
+#    deg, cnt = zip(*ndegree.items())
+#    plt.title('Node degree distribution')
+#    plt.xlabel(r'Node degree $k$ ')
+#    plt.ylabel(r'Distribution $\mathcal{P(k)}$')
+#    plot= plt.bar(deg, cnt, width=0.80, color='b')
+   
+#    return plot 
 
