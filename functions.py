@@ -10,6 +10,8 @@ import random
 import numpy as np
 from random import choice
 from numba import njit
+import matplotlib.pyplot as plt
+from collections import Counter
 #----------------------------FUNCIONES A USAR-----------------------------------------------
 
 def isintrace(pos, trace):
@@ -253,30 +255,180 @@ def clean(G):
     return  nodos , copia  
 
 #%%
-#necesitamos hacer una funcion que junte todos los diccionarios con nodos, y despues haga el histograma
-#con eso 
 
+    
+def degree_distribution(nfiles): 
+    
+    degrees = np.zeros((nfiles,6))
+    for n in range(nfiles):
+        filename= 'Graph%i.gpickle' % n
+        
+        G = nx.read_gpickle(filename)
+        
+        #_,G = clean(G)
+        degree_sequence= sorted([d for n,d in G.degree()], reverse=True)
+        
+        ndegree= Counter(degree_sequence)
+        deg, cnt = zip(*ndegree.items())
+        
+        for i in range(len(deg)):
+            degrees[n, deg[i]-1] = cnt[i]
+            
+    total_histogram = np.sum(degrees, axis=0)
+    #cum_total_histogram = np.cumsum(total_histogram)
+    x= np.arange(1,7)
+    
+  
+    plt.title('Node degree distribution')
+    plt.xlabel(r'Node degree $k$ ')
+    plt.ylabel(r'Distribution $\mathcal{P(k)}$')
+    plt.yscale('log')
+    
 
-
-# def analisis(G):
-#     from collections import Counter 
-#     for g in range(1000): 
-#         degrees= dict(Counter(Gi.degrees)+ Counter(degrees_2))
-
-# def histogram(G): 
+    plot_1= plt.bar(x,total_histogram)
+    plt.show()
     
     
-#    degree_sequence= sorted([d for n,d in G.degree()], reverse=True)
-   
-#    from collections import Counter
-#    import matplotlib.pyplot as plt
+    #plot_2= plt.bar(x, cum_total_histogram)
+    plt.show()
+    
+    return plot_1
 
-#    ndegree= Counter(degree_sequence)
-#    deg, cnt = zip(*ndegree.items())
-#    plt.title('Node degree distribution')
-#    plt.xlabel(r'Node degree $k$ ')
-#    plt.ylabel(r'Distribution $\mathcal{P(k)}$')
-#    plot= plt.bar(deg, cnt, width=0.80, color='b')
-   
-#    return plot 
+#end degree_distribution
+
+
+
+#%% 
+
+
+def topological_generations(G):
+    """Stratifies a DAG into generations.
+
+    A topological generation is node collection in which ancestors of a node in each
+    generation are guaranteed to be in a previous generation, and any descendants of
+    a node are guaranteed to be in a following generation. Nodes are guaranteed to
+    be in the earliest possible generation that they can belong to.
+
+    Parameters
+    ----------
+    G : NetworkX digraph
+        A directed acyclic graph (DAG)
+
+    Yields
+    ------
+    sets of nodes
+        Yields sets of nodes representing each generation.
+
+    Raises
+    ------
+    NetworkXError
+        Generations are defined for directed graphs only. If the graph
+        `G` is undirected, a :exc:`NetworkXError` is raised.
+
+    NetworkXUnfeasible
+        If `G` is not a directed acyclic graph (DAG) no topological generations
+        exist and a :exc:`NetworkXUnfeasible` exception is raised.  This can also
+        be raised if `G` is changed while the returned iterator is being processed
+
+    RuntimeError
+        If `G` is changed while the returned iterator is being processed.
+
+    Examples
+    --------
+    >>> DG = nx.DiGraph([(2, 1), (3, 1)])
+    >>> [sorted(generation) for generation in nx.topological_generations(DG)]
+    [[2, 3], [1]]
+
+    Notes
+    -----
+    The generation in which a node resides can also be determined by taking the
+    max-path-distance from the node to the farthest leaf node. That value can
+    be obtained with this function using `enumerate(topological_generations(G))`.
+
+    See also
+    --------
+    topological_sort
+    """
+    if not G.is_directed():
+        raise nx.NetworkXError("Topological sort not defined on undirected graphs.")
+
+    multigraph = G.is_multigraph()
+    indegree_map = {v: d for v, d in G.in_degree() if d > 0}
+    zero_indegree = [v for v, d in G.in_degree() if d == 0]
+
+    while zero_indegree:
+        this_generation = zero_indegree
+        zero_indegree = []
+        for node in this_generation:
+            if node not in G:
+                raise RuntimeError("Graph changed during iteration")
+            for child in G.neighbors(node):
+                try:
+                    indegree_map[child] -= len(G[node][child]) if multigraph else 1
+                except KeyError as err:
+                    raise RuntimeError("Graph changed during iteration") from err
+                if indegree_map[child] == 0:
+                    zero_indegree.append(child)
+                    del indegree_map[child]
+        yield this_generation
+
+    if indegree_map:
+        raise nx.NetworkXUnfeasible(
+            "Graph contains a cycle or graph changed during iteration"
+        )
+#%% 
+
+def subarboles(nfiles):
+    ''' Toma un arbol dirigido y sin nodos de grado 2 y calcula los nodos que hay en la cuarta generacion.
+    Luego, para un arreglo de subarboles (grafos dirigidos) calcula la persistencia y el tamaño.
+    Para el calculo de la persistencia genera una lista de listas con los nodos de cada generación. De esta
+    forma, el largo de esa lista es la cantidad de generaciones que tiene el arbol(contando al nodo madre). 
+    Por otro lado, el tamaño del subarbol viene dado por la cantidad de conexiones que existe, que se calcula
+    como el largo de la lista contenedora de edges. '''
+    arboles= []
+    for n in range(nfiles): 
+        #esta primera parte genera una lista de los arboles de todos los grafos, partiendo desde el nodo 0
+        
+        filename= 'Graph%i.gpickle' % n #elige un archivo y lo nombra como corresponde
+        G= nx.read_gpickle(filename) #lee el archivo
+        _,copia= clean(G) #limpia cada grafo 
+        arbol= nx.dfs_tree(copia,0) #genera un arbol dirigido para cada grafo 
+        arboles.append(arbol) #y cada uno se guarda en una lista de arboles. 
+        
+        print('la lista de todos los subarboles es', arboles) #esta bien 
+        
+        for arbol in arboles:
+            
+            #ordena la lista de generaciones en orden creciente; va de la gen 1 a la gen(len(G)) 
+            generaciones= [sorted(generation) for generation in topological_generations(arboles)] 
+            
+            #entrega los nodos de la cuarta generacion. Esta bien :3
+            
+            nodos= generaciones[3] 
+        
+        
+            subarb=[]
+            for i in range(len(nodos)):
+                subarb +=  [nx.dfs_tree(arbol, nodos[i])] 
+          
+                persistencia= []
+                tamaño= []
+                for j in range(len(subarb)): 
+                    subgenerations= [sorted(generation) for generation in topological_generations(subarb[j] ) ]
+                    persistencia.append(len(subgenerations))
+                
+                    tamaño.append(len( subarb[j].edges() ))
+                    
+                cantidad_subarboles= len(subarb)
+    return cantidad_subarboles, persistencia, tamaño
+    
+ 
+        
+
+
+
+
+
+
+
 
