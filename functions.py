@@ -244,7 +244,7 @@ def clean(G):
     
     for i in range(len(copia.nodes)): 
         
-        if copia.degree(i)== 2: 
+        if copia.degree(i)== 2 and i != 0: 
             neighbours = [n for n in copia[i]]
             copia.add_edge(neighbours[0], neighbours[1])
             copia.remove_node(i)
@@ -376,16 +376,14 @@ def topological_generations(G):
         raise nx.NetworkXUnfeasible(
             "Graph contains a cycle or graph changed during iteration"
         )
+        
 #%% 
 
-def subarboles(nfiles):
-    ''' Toma un arbol dirigido y sin nodos de grado 2 y calcula los nodos que hay en la cuarta generacion.
-    Luego, para un arreglo de subarboles (grafos dirigidos) calcula la persistencia y el tamaño.
-    Para el calculo de la persistencia genera una lista de listas con los nodos de cada generación. De esta
-    forma, el largo de esa lista es la cantidad de generaciones que tiene el arbol(contando al nodo madre). 
-    Por otro lado, el tamaño del subarbol viene dado por la cantidad de conexiones que existe, que se calcula
-    como el largo de la lista contenedora de edges. '''
+def generar_arboles(nfiles):
+    ''' Genera una lista de subarboles dirigidos a partir de cada grafo.'''
+  
     arboles= []
+    
     for n in range(nfiles): 
         #esta primera parte genera una lista de los arboles de todos los grafos, partiendo desde el nodo 0
         
@@ -395,38 +393,63 @@ def subarboles(nfiles):
         arbol= nx.dfs_tree(copia,0) #genera un arbol dirigido para cada grafo 
         arboles.append(arbol) #y cada uno se guarda en una lista de arboles. 
         
-        print('la lista de todos los subarboles es', arboles) #esta bien 
+    return arboles
+
+#%%
+def subarboles(arbol):   
+    #   ''' Toma un arbol dirigido y sin nodos de grado 2 y calcula los nodos
+    #   que hay  en la cuarta generacion.
+    # Luego, para un arreglo de subarboles (grafos dirigidos) calcula la persistencia y el tamaño.
+    # Para el calculo de la persistencia genera una lista de listas con los nodos de cada generación. De esta
+    # forma, el largo de esa lista es la cantidad de generaciones que tiene el arbol(contando al nodo madre). 
+    # Por otro lado, el tamaño del subarbol viene dado por la cantidad de conexiones que existe, que se calcula
+    # como el largo de la lista contenedora de edges. '''
+        #ordena la lista de generaciones en orden creciente; va de la gen 1 a la gen(len(G))
+    
+    generaciones= [sorted(generation) for generation in topological_generations(arbol)] 
+    
+    #entrega los nodos de la cuarta generacion. Esta bien :3
+    
+    nodos= generaciones[3] 
+    
+    subarb=[]
+    
+    for i in range(len(nodos)):
+        subarb +=  [nx.dfs_tree(arbol, nodos[i])] 
+      
+        persistencia= []
+        tamaño= []
+        for j in range(len(subarb)): 
+            subgenerations= [sorted(generation) for generation in topological_generations(subarb[j] ) ]
+            persistencia.append(len(subgenerations))
         
-        for arbol in arboles:
+            tamaño.append(len( subarb[j].edges() ))
             
-            #ordena la lista de generaciones en orden creciente; va de la gen 1 a la gen(len(G)) 
-            generaciones= [sorted(generation) for generation in topological_generations(arboles)] 
-            
-            #entrega los nodos de la cuarta generacion. Esta bien :3
-            
-            nodos= generaciones[3] 
-        
-        
-            subarb=[]
-            for i in range(len(nodos)):
-                subarb +=  [nx.dfs_tree(arbol, nodos[i])] 
-          
-                persistencia= []
-                tamaño= []
-                for j in range(len(subarb)): 
-                    subgenerations= [sorted(generation) for generation in topological_generations(subarb[j] ) ]
-                    persistencia.append(len(subgenerations))
+            cantidad_subarboles= len(subarb)
                 
-                    tamaño.append(len( subarb[j].edges() ))
-                    
-                cantidad_subarboles= len(subarb)
+            # cantidades= cantidad_subarboles.append
+            # tamaños.append(tamaño)
+            # persistencia.append(persistencia) #REVISAAAAAAAAAAAAR
+        
     return cantidad_subarboles, persistencia, tamaño
     
  
-        
-
-
-
+        #%%
+#falta hacer esto dentro de un ciclo for para los 300 elementos 
+arbolitos= generar_arboles(300)
+tamaño= []
+persistencia= []
+for tree in arbolitos: 
+    
+    subarbol= subarboles(tree)
+    tamaño += subarbol[2]
+    persistencia += subarbol[1]
+    
+ #%%   
+plt.hist(tamaño, bins= 25)
+plt.show()
+plt.hist(persistencia, bins= 25)
+plt.show()
 
 
 
