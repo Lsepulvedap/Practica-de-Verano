@@ -92,16 +92,16 @@ def direction(pos, Trace):
 
         
 #%%
-def revivir(Trace,ind_part_activas,ind_tmp): 
-    ''' Revisa la posición de la partícula que quedó activa y ve si tiene espacio dis-
-    ponible'''
+# def revivir(Trace,ind_part_activas,ind_tmp): 
+#     ''' Revisa la posición de la partícula que quedó activa y ve si tiene espacio dis-
+#     ponible'''
     
-    for i in ind_part_activas: 
-        revisar= Trace[i]
-        r= direction(revisar, Trace)
-        if len(r) > 0: 
-            ind_tmp.append(i)
-    return ind_tmp
+#     for i in ind_part_activas: 
+#         revisar= Trace[i]
+#         r= direction(revisar, Trace)
+#         if len(r) > 0: 
+#             ind_tmp.append(i)
+#     return ind_tmp
         
  
 #%% 
@@ -140,18 +140,16 @@ def action(G, edges, pos, Trace, ind_tmp, i, N):
     las conexiones, respectivamente. ''' 
     
     pos_tmp = np.copy(pos)
-    pos_tmp= direction(pos, Trace)# direction revisa las posiciones posibles y elige una que no está en la traza
-    #print('la posicion arrojada es',pos_tmp)
-    
-    #print('la posicion nueva es', pos_tmp)
-    
+    pos_tmp= direction(pos_tmp, Trace)# direction revisa las posiciones posibles y elige una que no está en la traza
+   
     if np.any(pos_tmp):
         #si es que hay algun elemento elegido, lo agregamos a traza. Después hay que ver si ese punto
-        #cunple con la condicion de borde 
+        #cumple con la condicion de borde 
         Trace= np.concatenate( (Trace, [pos_tmp]) , axis=0)
         N += 1
         #print(N)
         ind_tmp.append(N) #anexamos el indice activo a la enésima partícula
+        
         
         edges= edge_list(edges, Trace, i, N ) #source es un indice de la traza, y target tambien
         G.add_node(N, pos= (pos_tmp[0], pos_tmp[1]))
@@ -278,14 +276,15 @@ def degree_distribution(nfiles):
     #cum_total_histogram = np.cumsum(total_histogram)
     x= np.arange(1,7)
     
-  
-    plt.title('Node degree distribution')
-    plt.xlabel(r'Node degree $k$ ')
-    plt.ylabel(r'Distribution $\mathcal{P(k)}$')
+    plt.style.use('bmh')
+    plt.grid(False) 
+    plt.title('Distribución de grados', fontsize=18)
+    plt.xlabel(r'$k$ ', fontsize=15)
+    plt.ylabel(r' $\mathcal{P}(k)$', fontsize=15)
     plt.yscale('log')
     
 
-    plot_1= plt.bar(x,total_histogram)
+    plot_1= plt.bar(x,total_histogram, color= 'crimson')
     plt.show()
     
     
@@ -434,24 +433,7 @@ def subarboles(arbol):
     return cantidad_subarboles, persistencia, tamaño
     
  
-        #%%
-#falta hacer esto dentro de un ciclo for para los 300 elementos 
-arbolitos= generar_arboles(300)
-tamaño= []
-persistencia= []
-for tree in arbolitos: 
-    
-    subarbol= subarboles(tree)
-    tamaño += subarbol[2]
-    persistencia += subarbol[1]
-    
- #%%   
-plt.hist(tamaño, bins= 25)
-plt.show()
-plt.hist(persistencia, bins= 25)
-plt.show()
-
-
+#end subarboles
 
 
 
