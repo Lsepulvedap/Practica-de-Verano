@@ -1,6 +1,6 @@
 # Practica-de-Verano
 
-Repositorio destinado a guardar codigos, imágenes y todo tipo de material utilizado durante las práticvas de verano 2023, Uchile. 
+Repositorio destinado a guardar codigos, imágenes y datos para análisis que se vaya utilizando durante las práticvas de verano 2023, Uchile. 
 
 Resumen del trabajo 
 
@@ -23,10 +23,6 @@ Como consecuencia de generar conexiones a lo más con tres nodos, la red con ram
 reactivación. Ya que ambas deben llenar el mismo espacio, la red con ramificación produce subárboles de mayor tamaño y más persistentes, mientras que la red con
 reactivación produce subárboles mas pequeños y menos persistentes.
 Como trabajo a futuro se propone comparar las propiedades de estas redes con las de patrones observados en sistemas no lineales teóricos y experimentales, así como
-también describir matemáticamente cada modelo mediante ecuaciones de campo medio
+también describir matemáticamente cada modelo mediante ecuaciones de campo medio.
 
-──────▄▀▄─────▄▀▄
-─────▄█░░▀▀▀▀▀░░█▄
-─▄▄──█░░░░░░░░░░░█──▄▄
-█▄▄█─█░░▀░░┬░░▀░░█─█▄▄█
 Para mas información, contáctame a lsepulveda2019@udec.cl
