@@ -1,6 +1,6 @@
 # Practica-de-Verano
 
-Repositorio destinado a guardar codigos, imágenes y datos para análisis que se vaya utilizando durante las práticvas de verano 2023, Uchile. 
+Repositorio destinado a guardar codigos, imágenes y datos para análisis que se vaya utilizando durante las práticas de verano 2023, Uchile. 
 
 Resumen del trabajo 
 
